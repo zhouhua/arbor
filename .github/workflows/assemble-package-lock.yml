@@ -1,0 +1,32 @@
+name: Assemble package-lock
+on:
+  push:
+    paths:
+      - '_lock_b64/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode lockfile
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, zlib, pathlib, glob
+          parts = sorted(glob.glob('_lock_b64/*.b64'))
+          data = ''.join(pathlib.Path(p).read_text() for p in parts)
+          raw = zlib.decompress(base64.b64decode(data))
+          pathlib.Path('package-lock.json').write_bytes(raw)
+          print('wrote', len(raw), 'bytes')
+          PY
+          rm -rf _lock_b64
+          rm -f .github/workflows/assemble-package-lock.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git status
+          git commit -m "chore: assemble package-lock.json"
+          git push
