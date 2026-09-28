@@ -2,7 +2,7 @@ name: Assemble package-lock
 on:
   push:
     paths:
-      - '_lock_b64/**'
+      - '_lock_b64/p59.b64'
   workflow_dispatch:
 permissions:
   contents: write
@@ -16,7 +16,8 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import base64, zlib, pathlib, glob
-          parts = sorted(glob.glob('_lock_b64/*.b64'))
+          parts = sorted(glob.glob('_lock_b64/p*.b64'))
+          assert len(parts) == 60, (len(parts), parts)
           data = ''.join(pathlib.Path(p).read_text() for p in parts)
           raw = zlib.decompress(base64.b64decode(data))
           pathlib.Path('package-lock.json').write_bytes(raw)
