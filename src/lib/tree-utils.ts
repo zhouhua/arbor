@@ -1,28 +1,10 @@
 import type { TreeNode } from "@/types/tree";
 
-const NODE_WIDTH = 280;
-const NODE_HEIGHT = 140;
-const H_GAP = 48;
-const V_GAP = 72;
-
-export function layoutChildren(
-  parent: TreeNode,
-  childCount: number,
-  existingPositions?: Array<{ x: number; y: number }>
-): Array<{ x: number; y: number }> {
-  if (existingPositions && existingPositions.length === childCount) {
-    return existingPositions;
-  }
-
-  const totalWidth = childCount * NODE_WIDTH + (childCount - 1) * H_GAP;
-  const startX = parent.position.x + NODE_WIDTH / 2 - totalWidth / 2;
-  const y = parent.position.y + NODE_HEIGHT + V_GAP;
-
-  return Array.from({ length: childCount }, (_, i) => ({
-    x: startX + i * (NODE_WIDTH + H_GAP),
-    y,
-  }));
-}
+export {
+  LAYOUT_NODE_WIDTH as NODE_WIDTH,
+  LAYOUT_NODE_HEIGHT as NODE_HEIGHT,
+  layoutChildren,
+} from "@/lib/tree-layout";
 
 export function getChildren(
   nodes: Record<string, TreeNode>,
@@ -88,5 +70,3 @@ export function toContextNode(node: TreeNode) {
     kind: node.kind,
   };
 }
-
-export { NODE_WIDTH, NODE_HEIGHT };

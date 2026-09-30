@@ -10,6 +10,7 @@ import {
   Keyboard,
   Settings2,
   Loader2,
+  LayoutTemplate,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,17 +30,18 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { createRootAndExpand, focusComposer } from "@/lib/node-actions";
 import { useTreeStore } from "@/store/tree-store";
 import { useTemporal } from "@/store/use-temporal";
 import { HistoryPanel } from "@/components/panels/history-panel";
 import { SettingsPanel } from "@/components/panels/settings-panel";
-import { expandNodeWithDialogue } from "@/lib/expand-node";
 
 export function CanvasToolbar() {
-  const createRoot = useTreeStore((s) => s.createRoot);
   const resetAll = useTreeStore((s) => s.resetAll);
   const rootId = useTreeStore((s) => s.rootId);
   const busyNodeId = useTreeStore((s) => s.busyNodeId);
+  const organizeLayout = useTreeStore((s) => s.organizeLayout);
   const temporal = useTemporal();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -64,17 +66,8 @@ export function CanvasToolbar() {
         temporal.redo();
       }
     };
-    const onNewRoot = () => {
-      setTitle("");
-      setContent("");
-      setCreateOpen(true);
-    };
     window.addEventListener("keydown", onKey);
-    window.addEventListener("arbor:new-root", onNewRoot);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("arbor:new-root", onNewRoot);
-    };
+    return () => window.removeEventListener("keydown", onKey);
   }, [temporal]);
 
   const canUndo = temporal.pastStates.length > 0;
@@ -82,22 +75,26 @@ export function CanvasToolbar() {
 
   return (
     <>
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-3 p-4">
-        <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-teal-900/10 bg-white/80 px-3 py-2 shadow-sm backdrop-blur-md">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-start justify-between gap-3 p-3 sm:p-4">
+        <div className="arbor-chrome pointer-events-auto flex items-center gap-2.5 rounded-xl px-3 py-2 shadow-sm">
           <div>
-            <p className="font-[family-name:var(--font-display)] text-lg leading-none text-teal-950">
-              枝脉
+            <p className="font-heading text-base leading-none font-semibold tracking-tight text-foreground">
+              清照
             </p>
-            <p className="mt-0.5 text-[10px] tracking-[0.18em] text-teal-800/60 uppercase">
-              Arbor · Tree Thinking
+            <p className="mt-1 text-[10px] tracking-[0.16em] text-muted-foreground uppercase">
+              Lucora
             </p>
           </div>
         </div>
 
-        <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-2xl border border-teal-900/10 bg-white/80 p-1.5 shadow-sm backdrop-blur-md">
+        <div className="arbor-chrome pointer-events-auto flex flex-wrap items-center gap-0.5 rounded-xl p-1 shadow-sm">
           <Tool
-            label="新建根节点"
+            label="新建根议题"
             onClick={() => {
+              if (!rootId) {
+                focusComposer();
+                return;
+              }
               setTitle("");
               setContent("");
               setCreateOpen(true);
@@ -122,6 +119,16 @@ export function CanvasToolbar() {
           <Tool label="历史记录" onClick={() => setHistoryOpen(true)}>
             <History className="h-4 w-4" />
           </Tool>
+          <Tool
+            label="整理布局 ⇧F"
+            disabled={!rootId}
+            onClick={() => {
+              organizeLayout();
+              toast.success("已整理布局");
+            }}
+          >
+            <LayoutTemplate className="h-4 w-4" />
+          </Tool>
           <Tool label="模型设定" onClick={() => setSettingsOpen(true)}>
             <Settings2 className="h-4 w-4" />
           </Tool>
@@ -129,12 +136,14 @@ export function CanvasToolbar() {
             label="快捷键"
             onClick={() =>
               toast.message("快捷键", {
-                description: "⌘/Ctrl+Z 撤销 · ⌘/Ctrl+⇧Z 或 ⌘Y 重做 · 滚轮缩放 · 拖动画布平移",
+                description:
+                  "/ 聚焦 · Esc 取消选中 · Delete 删除 · ⌘Z/⌘⇧Z 撤销重做 · ⌘+/⌘- 缩放 · ⌘0 100% · ⌘1 适应 · ⇧F 整理 · 双击空白聚焦 · 滚轮平移 · ⌘滚轮缩放",
               })
             }
           >
             <Keyboard className="h-4 w-4" />
           </Tool>
+          <ThemeToggle />
           <Tool
             label="清空画布"
             disabled={!rootId}
@@ -142,6 +151,7 @@ export function CanvasToolbar() {
               resetAll();
               temporal.clear();
               toast.success("画布已清空");
+              focusComposer();
             }}
           >
             <Eraser className="h-4 w-4" />
@@ -158,26 +168,24 @@ export function CanvasToolbar() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>新建根议题</DialogTitle>
+            <DialogTitle>替换为新根议题</DialogTitle>
             <DialogDescription>
-              {rootId
-                ? "将替换当前整棵思维树，并立即拆解出下级分支。"
-                : "创建一个核心议题后，AI 会立刻多角度拆解出下级节点。"}
+              将清空当前思维树，并以新议题重新拆解。
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="议题标题，例如：如何提升新用户留存"
+              placeholder="议题标题"
               autoFocus
               disabled={creating}
             />
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="补充背景、约束或你已经知道的信息…"
-              rows={4}
+              placeholder="补充背景（可选）"
+              rows={3}
               className="resize-none"
               disabled={creating}
             />
@@ -193,26 +201,15 @@ export function CanvasToolbar() {
             <Button
               disabled={!title.trim() || creating || !!busyNodeId}
               onClick={async () => {
-                const topic = title.trim();
-                const body =
-                  content.trim() || "从这里开始拆解与多角度探索。";
                 setCreating(true);
                 try {
-                  if (rootId) {
-                    resetAll();
-                    temporal.clear();
-                  }
-                  const id = createRoot(topic, body);
+                  temporal.clear();
                   setCreateOpen(false);
-                  toast.message("根节点已创建，正在拆解…");
-                  await expandNodeWithDialogue(
-                    id,
-                    `请围绕「${topic}」进行首轮拆解：从核心目标、多角度分析、可行路径等方向生成下级节点。背景：${body}`
-                  );
-                } finally {
-                  setCreating(false);
+                  await createRootAndExpand(title, content);
                   setTitle("");
                   setContent("");
+                } finally {
+                  setCreating(false);
                 }
               }}
             >
@@ -222,7 +219,7 @@ export function CanvasToolbar() {
                   拆解中
                 </>
               ) : (
-                "开始并拆解"
+                "替换并拆解"
               )}
             </Button>
           </DialogFooter>
@@ -254,7 +251,7 @@ function Tool({
           variant="ghost"
           disabled={disabled}
           onClick={onClick}
-          className="text-slate-700"
+          className="text-muted-foreground"
         >
           {children}
         </Button>

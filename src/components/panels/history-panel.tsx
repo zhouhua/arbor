@@ -43,16 +43,16 @@ export function HistoryPanel({
         </DialogHeader>
         <ScrollArea className="h-[360px] pr-3">
           {historyLog.length === 0 ? (
-            <p className="py-10 text-center text-sm text-slate-500">
+            <p className="py-10 text-center text-sm text-muted-foreground">
               暂无历史记录
             </p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {historyLog.map((h) => (
                 <li key={h.id}>
                   <button
                     type="button"
-                    className="flex w-full items-start gap-3 rounded-xl border border-teal-900/10 bg-teal-50/40 px-3 py-2.5 text-left transition hover:bg-teal-50"
+                    className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-muted"
                     onClick={() => {
                       if (h.nodeId && nodes[h.nodeId]) {
                         selectNode(h.nodeId);
@@ -60,14 +60,14 @@ export function HistoryPanel({
                       }
                     }}
                   >
-                    <span className="mt-0.5 rounded-md bg-teal-800/90 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                    <span className="mt-0.5 rounded-md bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-secondary-foreground">
                       {typeLabel[h.type] ?? h.type}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm text-slate-800">
+                      <span className="block truncate text-sm text-foreground">
                         {h.label}
                       </span>
-                      <span className="block text-[11px] text-slate-500">
+                      <span className="block text-[11px] text-muted-foreground">
                         {new Date(h.timestamp).toLocaleString()}
                       </span>
                     </span>

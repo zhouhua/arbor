@@ -17,8 +17,28 @@ import {
   getDescendantIds,
   layoutChildren,
 } from "@/lib/tree-utils";
+import {
+  computeTreeLayout,
+  LAYOUT_ROOT_ORIGIN,
+} from "@/lib/tree-layout";
 
 const STORAGE_KEY = "arbor-tree-v1";
+
+function withTreeLayout(
+  nodes: Record<string, TreeNode>,
+  rootId: string | null
+): Record<string, TreeNode> {
+  if (!rootId || !nodes[rootId]) return nodes;
+  const positions = computeTreeLayout(nodes, rootId);
+  const next = { ...nodes };
+  const now = Date.now();
+  for (const [id, pos] of Object.entries(positions)) {
+    const node = next[id];
+    if (!node) continue;
+    next[id] = { ...node, position: pos, updatedAt: now };
+  }
+  return next;
+}
 
 interface TreeState {
   nodes: Record<string, TreeNode>;
@@ -27,6 +47,8 @@ interface TreeState {
   historyLog: HistoryEntry[];
   busyNodeId: string | null;
   lastArticle: { title: string; article: string; nodeId: string } | null;
+  /** 布局变更计数，供画布相机响应 */
+  layoutTick: number;
 
   selectNode: (id: string | null) => void;
   setBusy: (id: string | null) => void;
@@ -54,6 +76,7 @@ interface TreeState {
     prompt?: string
   ) => void;
   moveNode: (id: string, position: { x: number; y: number }) => void;
+  organizeLayout: () => void;
   deleteNode: (id: string) => void;
   setArticle: (article: {
     title: string;
@@ -104,6 +127,7 @@ export const useTreeStore = create<TreeState>()(
         historyLog: [],
         busyNodeId: null,
         lastArticle: null,
+        layoutTick: 0,
 
         selectNode: (id) => set({ selectedNodeId: id }),
 
@@ -118,12 +142,13 @@ export const useTreeStore = create<TreeState>()(
             title,
             content,
             kind: "root",
-            position: { x: 120, y: 80 },
+            position: { ...LAYOUT_ROOT_ORIGIN },
           });
           set({
             nodes: { [node.id]: node },
             rootId: node.id,
             selectedNodeId: node.id,
+            layoutTick: get().layoutTick + 1,
             historyLog: pushLog(get(), {
               type: "create-root",
               label: `创建根节点「${title}」`,
@@ -158,9 +183,11 @@ export const useTreeStore = create<TreeState>()(
           set((s) => {
             const nodes = { ...s.nodes };
             for (const n of created) nodes[n.id] = n;
+            const laidOut = withTreeLayout(nodes, s.rootId);
             return {
-              nodes,
+              nodes: laidOut,
               selectedNodeId: created[0]?.id ?? s.selectedNodeId,
+              layoutTick: s.layoutTick + 1,
               historyLog: pushLog(s, {
                 type: historyType,
                 label:
@@ -205,8 +232,9 @@ export const useTreeStore = create<TreeState>()(
             for (const id of removeIds) delete nodes[id];
             for (const n of created) nodes[n.id] = n;
             return {
-              nodes,
+              nodes: withTreeLayout(nodes, s.rootId),
               selectedNodeId: created[0]?.id ?? parentId,
+              layoutTick: s.layoutTick + 1,
               historyLog: pushLog(s, {
                 type: "regenerate",
                 label: `重新生成下级（${created.length}）`,
@@ -263,7 +291,8 @@ export const useTreeStore = create<TreeState>()(
             }
 
             return {
-              nodes,
+              nodes: withTreeLayout(nodes, s.rootId),
+              layoutTick: s.layoutTick + 1,
               historyLog: pushLog(s, {
                 type: "refine",
                 label: `修正：+${added} ~${updated} -${removed}（${prompt.slice(0, 24)}）`,
@@ -299,11 +328,40 @@ export const useTreeStore = create<TreeState>()(
           set((s) => {
             const node = s.nodes[id];
             if (!node) return s;
+            const dx = position.x - node.position.x;
+            const dy = position.y - node.position.y;
+            if (dx === 0 && dy === 0) return s;
+
+            const ids = [id, ...getDescendantIds(s.nodes, id)];
+            const nodes = { ...s.nodes };
+            const now = Date.now();
+            for (const nid of ids) {
+              const n = nodes[nid];
+              if (!n) continue;
+              nodes[nid] = {
+                ...n,
+                position: {
+                  x: n.position.x + dx,
+                  y: n.position.y + dy,
+                },
+                updatedAt: now,
+              };
+            }
+            return { nodes };
+          });
+        },
+
+        organizeLayout: () => {
+          set((s) => {
+            if (!s.rootId) return s;
             return {
-              nodes: {
-                ...s.nodes,
-                [id]: { ...node, position, updatedAt: Date.now() },
-              },
+              nodes: withTreeLayout(s.nodes, s.rootId),
+              layoutTick: s.layoutTick + 1,
+              historyLog: pushLog(s, {
+                type: "edit",
+                label: "整理画布布局",
+                nodeId: s.rootId,
+              }),
             };
           });
         },
@@ -321,14 +379,20 @@ export const useTreeStore = create<TreeState>()(
             for (const rid of removeIds) delete nodes[rid];
 
             const isRoot = s.rootId === id;
+            const nextRoot = isRoot ? null : s.rootId;
+            const nextNodes = isRoot
+              ? nodes
+              : withTreeLayout(nodes, nextRoot);
+
             return {
-              nodes,
-              rootId: isRoot ? null : s.rootId,
+              nodes: nextNodes,
+              rootId: nextRoot,
               selectedNodeId: isRoot
                 ? null
-                : parentId && nodes[parentId]
+                : parentId && nextNodes[parentId]
                   ? parentId
                   : null,
+              layoutTick: s.layoutTick + 1,
               historyLog: pushLog(s, {
                 type: "delete",
                 label: `删除「${node.title}」及子孙`,
@@ -358,6 +422,7 @@ export const useTreeStore = create<TreeState>()(
             historyLog: [],
             busyNodeId: null,
             lastArticle: null,
+            layoutTick: 0,
           }),
       }),
       {

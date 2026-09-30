@@ -1,36 +1,41 @@
 import type { Metadata } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { Bricolage_Grotesque, Source_Sans_3 } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const display = Fraunces({
+const display = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
+  axes: ["opsz"],
 });
 
-const sans = Plus_Jakarta_Sans({
+const sans = Source_Sans_3({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "枝脉 Arbor — 树状 AI 思维工具",
+  title: "清照 Lucora — 结构化思考画布",
   description:
-    "用思维树代替线性对话：对话展开、修正子树、链路总结、重生成与无限画布。",
+    "在无限画布上展开议题、拆解分支、修正与总结，把模糊问题照见成清晰结构。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-CN"
+      suppressHydrationWarning
       className={`${display.variable} ${sans.variable} h-full antialiased`}
     >
       <body className="min-h-full font-sans text-foreground">
-        <TooltipProvider delayDuration={200}>
-          {children}
-          <Toaster richColors position="top-center" />
-        </TooltipProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider delayDuration={200}>
+            {children}
+            <Toaster richColors position="top-center" />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

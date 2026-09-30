@@ -53,10 +53,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await callArborModel(body, resolved.creds);
+    const result = await callLucoraModel(body, resolved.creds);
     return Response.json({ ...result, _source: "llm" });
   } catch (error) {
-    console.error("Arbor AI failed:", error);
+    console.error("Lucora AI failed:", error);
     if (APICallError.isInstance(error)) {
       const status = error.statusCode;
       if (status === 401 || status === 403) {
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function callArborModel(
+async function callLucoraModel(
   body: AiRequest,
   creds: { apiKey: string; baseUrl: string; model: string }
 ): Promise<AiResponse> {
@@ -106,7 +106,7 @@ async function callArborModel(
         temperature: 0.7,
         maxOutputTokens: 2400,
         output: Output.object({
-          name: "ArborDialogue",
+          name: "LucoraDialogue",
           description: "Tree dialogue: child nodes to attach under current",
           schema: dialogueOutputSchema,
         }),
@@ -122,7 +122,7 @@ async function callArborModel(
         temperature: 0.7,
         maxOutputTokens: 2400,
         output: Output.object({
-          name: "ArborRegenerate",
+          name: "LucoraRegenerate",
           description: "Regenerate current node and optional children",
           schema: regenerateOutputSchema,
         }),
@@ -138,7 +138,7 @@ async function callArborModel(
         temperature: 0.55,
         maxOutputTokens: 2000,
         output: Output.object({
-          name: "ArborRefine",
+          name: "LucoraRefine",
           description: "Refine child nodes with add/update/remove ops",
           schema: refineOutputSchema,
         }),
@@ -154,7 +154,7 @@ async function callArborModel(
         temperature: 0.65,
         maxOutputTokens: 3200,
         output: Output.object({
-          name: "ArborSummarize",
+          name: "LucoraSummarize",
           description: "Path summary as a full markdown article",
           schema: summarizeOutputSchema,
         }),

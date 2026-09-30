@@ -1,8 +1,8 @@
 import type { AiAction, AiRequest } from "@/types/tree";
 
 export function buildSystemPrompt(action: AiAction): string {
-  const common = `你是「枝脉」——一棵思维树助手。用户在无限画布上以树状节点思考问题。
-请理解上下文（祖先链路、兄弟节点、当前节点与子节点），给出结构化结果。
+  const common = `你是「清照」——帮助用户在无限画布上展开与整理思路的助手。
+请理解上下文（祖先链路、兄弟节点、当前节点与子节点），给出清晰、可继续展开的结果。
 文案使用简洁中文；标题短、内容具体可执行。不要输出 markdown 代码围栏。`;
 
   switch (action) {

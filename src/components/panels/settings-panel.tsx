@@ -92,7 +92,7 @@ export function SettingsPanel({
 
         <div className="space-y-3">
           <label className="block space-y-1.5 text-sm">
-            <span className="text-slate-700">API Key</span>
+            <span className="text-foreground">API Key</span>
             <Input
               type="password"
               autoComplete="off"
@@ -105,12 +105,12 @@ export function SettingsPanel({
               }}
             />
             {fieldErrors.apiKey ? (
-              <span className="text-xs text-red-600">{fieldErrors.apiKey}</span>
+              <span className="text-xs text-destructive">{fieldErrors.apiKey}</span>
             ) : null}
           </label>
 
           <label className="block space-y-1.5 text-sm">
-            <span className="text-slate-700">Endpoint（Base URL）</span>
+            <span className="text-foreground">Endpoint（Base URL）</span>
             <Input
               type="url"
               autoComplete="off"
@@ -123,12 +123,12 @@ export function SettingsPanel({
               }}
             />
             {fieldErrors.baseUrl ? (
-              <span className="text-xs text-red-600">{fieldErrors.baseUrl}</span>
+              <span className="text-xs text-destructive">{fieldErrors.baseUrl}</span>
             ) : null}
           </label>
 
           <label className="block space-y-1.5 text-sm">
-            <span className="text-slate-700">模型</span>
+            <span className="text-foreground">模型</span>
             <Input
               autoComplete="off"
               spellCheck={false}
@@ -145,16 +145,16 @@ export function SettingsPanel({
             <p
               className={`text-xs ${
                 probeUi === "ok"
-                  ? "text-teal-700"
+                  ? "text-primary"
                   : probeUi === "fail"
-                    ? "text-red-600"
-                    : "text-slate-500"
+                    ? "text-destructive"
+                    : "text-muted-foreground"
               }`}
             >
               {probeMessage}
             </p>
           ) : (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               未配置时开发环境会使用内置 mock；正式部署请配置服务端或自备
               Key。
             </p>

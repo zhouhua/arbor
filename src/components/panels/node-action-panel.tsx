@@ -33,10 +33,14 @@ import {
 } from "@/lib/tree-utils";
 import { useTreeStore } from "@/store/tree-store";
 import type { AiAction } from "@/types/tree";
+import { cn } from "@/lib/utils";
 
 type PanelMode = "dialogue" | "refine" | "summarize" | null;
 
-const prompts: Record<Exclude<PanelMode, null>, { title: string; hint: string; placeholder: string }> = {
+const prompts: Record<
+  Exclude<PanelMode, null>,
+  { title: string; hint: string; placeholder: string }
+> = {
   dialogue: {
     title: "对话展开",
     hint: "上下文会包含父级与兄弟节点。若已有子节点，将重新生成下级。",
@@ -76,11 +80,11 @@ export function NodeActionPanel() {
 
   if (!node) {
     return (
-      <aside className="flex h-full flex-col justify-center border-l border-teal-900/10 bg-white/70 px-5 text-sm text-slate-500 backdrop-blur-md">
-        <p className="font-[family-name:var(--font-display)] text-lg text-slate-800">
+      <aside className="arbor-panel flex h-full flex-col justify-center px-5 text-sm text-muted-foreground">
+        <p className="font-heading text-lg font-semibold text-foreground">
           选中一个节点
         </p>
-        <p className="mt-2 leading-relaxed">
+        <p className="mt-2 max-w-[28ch] leading-relaxed">
           在画布上点击节点后，可进行对话、修正、总结、重生成或删除。
         </p>
       </aside>
@@ -160,22 +164,22 @@ export function NodeActionPanel() {
   }
 
   return (
-    <aside className="flex h-full flex-col border-l border-teal-900/10 bg-white/75 backdrop-blur-md">
-      <div className="space-y-2 border-b border-teal-900/10 px-4 py-4">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-teal-800/70">
+    <aside className="arbor-panel flex h-full flex-col">
+      <div className="space-y-2 border-b border-border px-4 py-4">
+        <p className="text-[11px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
           当前节点
         </p>
-        <h2 className="font-[family-name:var(--font-display)] text-xl leading-tight text-slate-900">
+        <h2 className="font-heading text-xl leading-tight font-semibold text-foreground">
           {node.title}
         </h2>
         <ScrollArea className="max-h-28">
-          <p className="pr-3 text-sm leading-relaxed text-slate-600">
+          <p className="pr-3 text-sm leading-relaxed text-muted-foreground">
             {node.content}
           </p>
         </ScrollArea>
       </div>
 
-      <div className="space-y-2 px-4 py-4">
+      <div className="space-y-1 px-3 py-3">
         <ActionButton
           icon={<MessageSquare className="h-4 w-4" />}
           label="对话"
@@ -312,26 +316,31 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex w-full items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
+      className={cn(
+        "flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors disabled:opacity-45",
         destructive
-          ? "border-red-200/80 bg-red-50/50 hover:bg-red-50 disabled:opacity-50"
-          : "border-teal-900/10 bg-white/60 hover:border-teal-700/30 hover:bg-teal-50/60 disabled:opacity-50"
-      }`}
+          ? "text-destructive hover:bg-destructive/10"
+          : "hover:bg-muted"
+      )}
     >
       <span
-        className={`mt-0.5 ${destructive ? "text-red-600" : "text-teal-800"}`}
+        className={cn(
+          "mt-0.5",
+          destructive ? "text-destructive" : "text-muted-foreground"
+        )}
       >
         {icon}
       </span>
       <span>
         <span
-          className={`block text-sm font-medium ${
-            destructive ? "text-red-700" : "text-slate-900"
-          }`}
+          className={cn(
+            "block text-sm font-medium",
+            destructive ? "text-destructive" : "text-foreground"
+          )}
         >
           {label}
         </span>
-        <span className="block text-xs text-slate-500">{desc}</span>
+        <span className="block text-xs text-muted-foreground">{desc}</span>
       </span>
     </button>
   );

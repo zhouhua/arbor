@@ -7,11 +7,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans), "Plus Jakarta Sans", ui-sans-serif, system-ui,
+  --font-sans: var(--font-sans), "Source Sans 3", ui-sans-serif, system-ui,
     sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
-  --font-heading: var(--font-display), Fraunces, Georgia, serif;
+  --font-heading: var(--font-display), "Bricolage Grotesque", ui-sans-serif,
+    system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -41,6 +42,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-canvas: var(--canvas);
+  --color-edge: var(--edge);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -50,41 +53,82 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Precision ink — cool blue-gray neutrals, single sharp accent */
 :root {
-  --canvas-bg: #e8f2ef;
-  --node-bg: #ffffff;
-  --background: #f3faf7;
-  --foreground: #0f1f1c;
-  --card: #ffffff;
-  --card-foreground: #0f1f1c;
-  --popover: #ffffff;
-  --popover-foreground: #0f1f1c;
-  --primary: #0f5c54;
-  --primary-foreground: #f3faf7;
-  --secondary: #d7ebe4;
-  --secondary-foreground: #123832;
-  --muted: #e2efe9;
-  --muted-foreground: #4d6560;
-  --accent: #cfe8df;
-  --accent-foreground: #0f3d37;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(15, 92, 84, 0.14);
-  --input: rgba(15, 92, 84, 0.18);
-  --ring: #0f766e;
-  --chart-1: #0f766e;
-  --chart-2: #147a6e;
-  --chart-3: #1d4e5f;
-  --chart-4: #d97706;
-  --chart-5: #475569;
-  --radius: 0.75rem;
-  --sidebar: #f7fcfa;
-  --sidebar-foreground: #0f1f1c;
-  --sidebar-primary: #0f5c54;
-  --sidebar-primary-foreground: #f3faf7;
-  --sidebar-accent: #d7ebe4;
-  --sidebar-accent-foreground: #123832;
-  --sidebar-border: rgba(15, 92, 84, 0.12);
-  --sidebar-ring: #0f766e;
+  --canvas: oklch(0.965 0.008 255);
+  --edge: oklch(0.55 0.08 255 / 0.45);
+  --background: oklch(0.975 0.006 255);
+  --foreground: oklch(0.24 0.025 255);
+  --card: oklch(0.995 0.004 255);
+  --card-foreground: oklch(0.24 0.025 255);
+  --popover: oklch(0.995 0.004 255);
+  --popover-foreground: oklch(0.24 0.025 255);
+  --primary: oklch(0.4 0.11 255);
+  --primary-foreground: oklch(0.98 0.004 255);
+  --secondary: oklch(0.93 0.012 255);
+  --secondary-foreground: oklch(0.3 0.03 255);
+  --muted: oklch(0.945 0.01 255);
+  --muted-foreground: oklch(0.5 0.02 255);
+  --accent: oklch(0.93 0.02 255);
+  --accent-foreground: oklch(0.28 0.04 255);
+  --destructive: oklch(0.55 0.2 25);
+  --border: oklch(0.24 0.025 255 / 0.1);
+  --input: oklch(0.24 0.025 255 / 0.12);
+  --ring: oklch(0.5 0.1 255);
+  --chart-1: oklch(0.45 0.11 255);
+  --chart-2: oklch(0.55 0.06 230);
+  --chart-3: oklch(0.5 0.08 200);
+  --chart-4: oklch(0.6 0.1 70);
+  --chart-5: oklch(0.45 0.02 255);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.98 0.005 255);
+  --sidebar-foreground: oklch(0.24 0.025 255);
+  --sidebar-primary: oklch(0.4 0.11 255);
+  --sidebar-primary-foreground: oklch(0.98 0.004 255);
+  --sidebar-accent: oklch(0.94 0.012 255);
+  --sidebar-accent-foreground: oklch(0.3 0.03 255);
+  --sidebar-border: oklch(0.24 0.025 255 / 0.09);
+  --sidebar-ring: oklch(0.5 0.1 255);
+  --chrome: oklch(0.995 0.004 255 / 0.82);
+  --chrome-border: oklch(0.24 0.025 255 / 0.1);
+}
+
+.dark {
+  --canvas: oklch(0.175 0.018 255);
+  --edge: oklch(0.7 0.06 255 / 0.35);
+  --background: oklch(0.16 0.02 255);
+  --foreground: oklch(0.93 0.01 255);
+  --card: oklch(0.21 0.022 255);
+  --card-foreground: oklch(0.93 0.01 255);
+  --popover: oklch(0.21 0.022 255);
+  --popover-foreground: oklch(0.93 0.01 255);
+  --primary: oklch(0.72 0.09 255);
+  --primary-foreground: oklch(0.18 0.03 255);
+  --secondary: oklch(0.26 0.025 255);
+  --secondary-foreground: oklch(0.9 0.01 255);
+  --muted: oklch(0.24 0.022 255);
+  --muted-foreground: oklch(0.7 0.02 255);
+  --accent: oklch(0.26 0.03 255);
+  --accent-foreground: oklch(0.92 0.01 255);
+  --destructive: oklch(0.65 0.18 25);
+  --border: oklch(0.93 0.01 255 / 0.1);
+  --input: oklch(0.93 0.01 255 / 0.12);
+  --ring: oklch(0.65 0.08 255);
+  --chart-1: oklch(0.7 0.09 255);
+  --chart-2: oklch(0.65 0.05 230);
+  --chart-3: oklch(0.6 0.06 200);
+  --chart-4: oklch(0.7 0.1 70);
+  --chart-5: oklch(0.6 0.02 255);
+  --sidebar: oklch(0.18 0.02 255);
+  --sidebar-foreground: oklch(0.93 0.01 255);
+  --sidebar-primary: oklch(0.72 0.09 255);
+  --sidebar-primary-foreground: oklch(0.18 0.03 255);
+  --sidebar-accent: oklch(0.24 0.025 255);
+  --sidebar-accent-foreground: oklch(0.92 0.01 255);
+  --sidebar-border: oklch(0.93 0.01 255 / 0.09);
+  --sidebar-ring: oklch(0.65 0.08 255);
+  --chrome: oklch(0.2 0.022 255 / 0.88);
+  --chrome-border: oklch(0.93 0.01 255 / 0.1);
 }
 
 @layer base {
@@ -99,37 +143,31 @@
   }
 }
 
-.arbor-atmosphere {
-  background:
-    radial-gradient(
-      1200px 600px at 12% -10%,
-      rgba(15, 118, 110, 0.16),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px 500px at 88% 8%,
-      rgba(180, 140, 60, 0.12),
-      transparent 50%
-    ),
-    radial-gradient(
-      700px 700px at 50% 110%,
-      rgba(29, 78, 95, 0.1),
-      transparent 45%
-    ),
-    linear-gradient(180deg, #eef7f3 0%, #e4f0eb 45%, #dfece7 100%);
+.arbor-chrome {
+  background: var(--chrome);
+  border: 1px solid var(--chrome-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.arbor-atmosphere::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
-  mix-blend-mode: soft-light;
-  pointer-events: none;
+.arbor-panel {
+  background: color-mix(in oklch, var(--sidebar) 92%, transparent);
+  border-color: var(--sidebar-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-/* React Flow tweaks */
+/* React Flow controls inherit chrome */
 .react-flow__controls-button {
-  border-bottom-color: rgba(15, 92, 84, 0.1) !important;
+  border-bottom-color: var(--border) !important;
+  background: transparent !important;
+  fill: var(--foreground) !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--muted) !important;
+}
+
+.react-flow__minimap {
+  background: var(--chrome) !important;
 }

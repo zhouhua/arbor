@@ -3,11 +3,27 @@
 import { useCallback, useMemo } from "react";
 import {
   Handle,
+  NodeToolbar,
   Position,
   type Node,
   type NodeProps,
 } from "@xyflow/react";
-import { Loader2, Sparkles } from "lucide-react";
+import {
+  FileText,
+  Loader2,
+  MessageSquare,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { focusComposer, runNodeAction } from "@/lib/node-actions";
 import { cn } from "@/lib/utils";
 import { useTreeStore } from "@/store/tree-store";
 import type { TreeNodeKind } from "@/types/tree";
@@ -16,80 +32,175 @@ export type ArborNodeData = {
   title: string;
   content: string;
   kind: TreeNodeKind;
-  childCount: number;
 };
 
 export type ArborFlowNode = Node<ArborNodeData, "arbor">;
 
 export function ArborNode({ id, data, selected }: NodeProps<ArborFlowNode>) {
   const busyNodeId = useTreeStore((s) => s.busyNodeId);
+  const deleteNode = useTreeStore((s) => s.deleteNode);
   const busy = busyNodeId === id;
 
-  const accent =
-    data.kind === "root"
-      ? "from-teal-700 to-teal-900"
-      : data.kind === "summary"
-        ? "from-amber-600 to-amber-800"
-        : "from-slate-600 to-slate-800";
+  const onFollowUp = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      useTreeStore.getState().selectNode(id);
+      focusComposer("dialogue");
+    },
+    [id]
+  );
+
+  const onRegenerate = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const node = useTreeStore.getState().nodes[id];
+      if (!node) return;
+      await runNodeAction(id, "regenerate", node.prompt || node.title);
+    },
+    [id]
+  );
+
+  const onSummarize = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      useTreeStore.getState().selectNode(id);
+      focusComposer("summarize");
+    },
+    [id]
+  );
+
+  const onDelete = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      deleteNode(id);
+      toast.success("节点已删除");
+    },
+    [deleteNode, id]
+  );
 
   return (
-    <div
-      className={cn(
-        "group relative w-[280px] rounded-2xl border bg-[color:var(--node-bg)] shadow-sm transition-all duration-300",
-        selected
-          ? "border-teal-600/70 shadow-[0_12px_40px_-18px_rgba(13,86,78,0.55)] scale-[1.02]"
-          : "border-teal-900/10 hover:border-teal-700/30 hover:shadow-md",
-        busy && "opacity-80"
-      )}
-    >
-      <Handle
-        type="target"
+    <>
+      <NodeToolbar
+        isVisible={selected}
         position={Position.Top}
-        className="!h-2.5 !w-2.5 !border-2 !border-white !bg-teal-700"
-      />
+        offset={12}
+        className="!m-0"
+      >
+        <div className="arbor-chrome flex items-center gap-0.5 rounded-xl p-1 shadow-md">
+          <Quick
+            label="跟进"
+            onClick={onFollowUp}
+            disabled={busy}
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+          </Quick>
+          <Quick label="总结" onClick={onSummarize} disabled={busy}>
+            <FileText className="h-3.5 w-3.5" />
+          </Quick>
+          <Quick label="重新生成" onClick={onRegenerate} disabled={busy}>
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Quick>
+          <Quick label="删除" onClick={onDelete} disabled={busy} danger>
+            <Trash2 className="h-3.5 w-3.5" />
+          </Quick>
+        </div>
+      </NodeToolbar>
+
+      <NodeToolbar
+        isVisible={selected}
+        position={Position.Bottom}
+        offset={14}
+        className="!m-0"
+      >
+        <button
+          type="button"
+          disabled={busy}
+          onClick={onFollowUp}
+          className={cn(
+            "arbor-chrome inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium shadow-md",
+            "text-foreground transition hover:bg-muted disabled:opacity-50"
+          )}
+        >
+          <MessageSquare className="h-3.5 w-3.5 text-primary" />
+          跟进
+        </button>
+      </NodeToolbar>
 
       <div
         className={cn(
-          "flex items-center gap-2 rounded-t-2xl bg-gradient-to-r px-3.5 py-2 text-white",
-          accent
+          "group relative w-[260px] rounded-xl border bg-card text-card-foreground transition-all duration-200",
+          selected
+            ? "border-primary/50 shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_35%,transparent),0_12px_32px_-16px_oklch(0.3_0.05_255/0.35)]"
+            : "border-border shadow-sm hover:border-foreground/20",
+          busy && "opacity-75"
         )}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          onFollowUp(e);
+        }}
       >
-        <Sparkles className="h-3.5 w-3.5 opacity-80" />
-        <span className="truncate text-xs font-medium tracking-wide">
-          {data.kind === "root"
-            ? "根议题"
-            : data.kind === "summary"
-              ? "总结"
-              : "分支"}
-        </span>
-        {data.childCount > 0 && (
-          <span className="ml-auto rounded-full bg-white/15 px-2 py-0.5 text-[10px]">
-            {data.childCount} 子节点
-          </span>
-        )}
-      </div>
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="!h-2 !w-2 !border-2 !border-card !bg-primary"
+        />
 
-      <div className="space-y-2 px-3.5 py-3">
-        <h3 className="font-[family-name:var(--font-display)] text-[15px] font-semibold leading-snug text-slate-900">
-          {data.title}
-        </h3>
-        <p className="line-clamp-3 text-xs leading-relaxed text-slate-600">
-          {data.content}
-        </p>
-      </div>
-
-      {busy && (
-        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/55 backdrop-blur-[1px]">
-          <Loader2 className="h-5 w-5 animate-spin text-teal-700" />
+        <div className="space-y-1.5 px-3.5 py-3.5">
+          <h3 className="font-heading text-[14px] font-semibold leading-snug text-foreground">
+            {data.title}
+          </h3>
+          <p className="line-clamp-3 text-[12px] leading-relaxed text-muted-foreground">
+            {data.content}
+          </p>
         </div>
-      )}
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!h-2.5 !w-2.5 !border-2 !border-white !bg-teal-700"
-      />
-    </div>
+        {busy && (
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-card/70 backdrop-blur-[1px]">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          </div>
+        )}
+
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!h-2 !w-2 !border-2 !border-card !bg-primary"
+        />
+      </div>
+    </>
+  );
+}
+
+function Quick({
+  children,
+  label,
+  onClick,
+  disabled,
+  danger,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick: (e: React.MouseEvent) => void;
+  disabled?: boolean;
+  danger?: boolean;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          disabled={disabled}
+          onClick={onClick}
+          className={cn(
+            "text-muted-foreground",
+            danger && "hover:bg-destructive/10 hover:text-destructive"
+          )}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="top">{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
