@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import type { AppSettingsDoc, ThemePreference } from "@/types/tree";
 
 export type LlmSettings = {
   apiKey: string;
@@ -10,41 +10,38 @@ export type LlmSettings = {
 };
 
 type SettingsState = LlmSettings & {
+  theme: ThemePreference;
   hydrated: boolean;
   setHydrated: (v: boolean) => void;
-  patch: (patch: Partial<LlmSettings>) => void;
+  hydrateFromDoc: (doc: Partial<AppSettingsDoc>) => void;
+  patch: (patch: Partial<LlmSettings & { theme: ThemePreference }>) => void;
   clearSecrets: () => void;
 };
 
-export const useSettingsStore = create<SettingsState>()(
-  persist(
-    (set) => ({
-      apiKey: "",
-      baseUrl: "",
-      model: "",
-      hydrated: false,
-      setHydrated: (v) => set({ hydrated: v }),
-      patch: (patch) =>
-        set((s) => ({
-          apiKey: patch.apiKey ?? s.apiKey,
-          baseUrl: patch.baseUrl !== undefined ? patch.baseUrl.trim() : s.baseUrl,
-          model: patch.model !== undefined ? patch.model.trim() : s.model,
-        })),
-      clearSecrets: () => set({ apiKey: "", baseUrl: "", model: "" }),
-    }),
-    {
-      name: "arbor-llm-settings-v1",
-      partialize: (s) => ({
-        apiKey: s.apiKey,
-        baseUrl: s.baseUrl,
-        model: s.model,
-      }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true);
-      },
-    }
-  )
-);
+export const useSettingsStore = create<SettingsState>()((set) => ({
+  apiKey: "",
+  baseUrl: "",
+  model: "",
+  theme: "system",
+  hydrated: false,
+  setHydrated: (v) => set({ hydrated: v }),
+  hydrateFromDoc: (doc) =>
+    set((s) => ({
+      apiKey: doc.apiKey ?? s.apiKey,
+      baseUrl: doc.baseUrl ?? s.baseUrl,
+      model: doc.model ?? s.model,
+      theme: doc.theme ?? s.theme,
+    })),
+  patch: (patch) =>
+    set((s) => ({
+      apiKey: patch.apiKey ?? s.apiKey,
+      baseUrl:
+        patch.baseUrl !== undefined ? patch.baseUrl.trim() : s.baseUrl,
+      model: patch.model !== undefined ? patch.model.trim() : s.model,
+      theme: patch.theme ?? s.theme,
+    })),
+  clearSecrets: () => set({ apiKey: "", baseUrl: "", model: "" }),
+}));
 
 export function hasUserApiKey(settings?: Pick<LlmSettings, "apiKey">): boolean {
   const key = settings?.apiKey ?? useSettingsStore.getState().apiKey;

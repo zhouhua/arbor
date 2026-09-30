@@ -10,8 +10,8 @@
 - **重新生成**：重写当前节点；若有下级则一并尝试重生成
 - **删除**：删除节点及其子孙
 - **无限画布**：缩放、平移、拖拽节点、小地图
-- **历史 / Undo / Redo**：操作日志 + `⌘/Ctrl+Z` / `⌘/Ctrl+⇧Z`
-- **模型设定（BYOK）**：自备 OpenAI 兼容 API Key / Endpoint / 模型，并可「测试连接」
+- **历史 / Undo / Redo**：多棵思维树本地会话库（IndexedDB）+ 操作日志 + `⌘/Ctrl+Z` / `⌘/Ctrl+⇧Z`
+- **模型设定（BYOK）**：自备 OpenAI 兼容 API Key / Endpoint / 模型，并可「测试连接」；设定与主题一并存 IndexedDB
 
 ## 本地运行
 

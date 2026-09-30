@@ -107,7 +107,10 @@ export async function createRootAndExpand(
   const store = useTreeStore.getState();
 
   if (store.rootId) {
-    store.resetAll();
+    store.syncCurrentIntoSessions();
+    store.beginNewSession();
+  } else if (!store.currentSessionId) {
+    store.beginNewSession();
   }
 
   const id = store.createRoot(topic, body);

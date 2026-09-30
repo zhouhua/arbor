@@ -1,19 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { TreeCanvas } from "@/components/canvas/tree-canvas";
 import { CanvasToolbar } from "@/components/canvas/canvas-toolbar";
 import { FloatingComposer } from "@/components/canvas/floating-composer";
 import { ArticlePanel } from "@/components/panels/article-panel";
+import { hydrateApp, startPersistRuntime } from "@/lib/app-persist";
 import { useTreeStore } from "@/store/tree-store";
 
 export function ArborApp() {
   const rootId = useTreeStore((s) => s.rootId);
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useTreeStore((s) => s.hydrated);
 
   useEffect(() => {
-    setHydrated(true);
+    let stop = () => {};
+    let cancelled = false;
+
+    (async () => {
+      await hydrateApp();
+      if (cancelled) return;
+      stop = startPersistRuntime();
+      useTreeStore.getState().setHydrated(true);
+    })();
+
+    return () => {
+      cancelled = true;
+      stop();
+    };
   }, []);
 
   if (!hydrated) {

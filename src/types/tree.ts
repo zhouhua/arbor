@@ -90,3 +90,29 @@ export type AiResponse =
   | AiDialogueResponse
   | AiRefineResponse
   | AiSummarizeResponse;
+
+export interface TreeSession {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  nodes: Record<string, TreeNode>;
+  rootId: string | null;
+  selectedNodeId: string | null;
+  historyLog: HistoryEntry[];
+  lastArticle: { title: string; article: string; nodeId: string } | null;
+}
+
+export type ThemePreference = "light" | "dark" | "system";
+
+export interface AppSettingsDoc {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  theme: ThemePreference;
+}
+
+export interface AppMeta {
+  currentSessionId: string | null;
+  version: 1;
+}
